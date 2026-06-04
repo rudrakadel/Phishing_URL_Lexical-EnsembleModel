@@ -1,0 +1,14 @@
+projvenv
+.venv
+venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.db
+unnecessary
+.git
+.github
+.gemini
+flask_phishing_app/runtime
+flask_phishing_app/static/screenshots

@@ -1,0 +1,61 @@
+### PhishScope — Copy Checklist
+### Everything listed here MUST be in the folder when copying to another PC.
+
+## ✅ MUST COPY — Core files
+setup_and_run.bat
+run_docker.bat
+docker-compose.yml
+README.md
+
+## ✅ MUST COPY — ML Models (biggest, most important)
+Model\1\tier1_url_model.pkl
+Model\1\preprocessor.pkl
+Model\2\final_ensemble.pkl
+Model\2\preprocessor.pkl
+Model\2\selected_features.txt
+Model\3\network_intelligence.py
+
+## ✅ MUST COPY — Flask Application
+flask_phishing_app\app.py
+flask_phishing_app\config.py
+flask_phishing_app\enrichment_queue.py
+flask_phishing_app\metrics.py
+flask_phishing_app\rate_limit.py
+flask_phishing_app\run_worker.py
+flask_phishing_app\generate_password_hash.py
+flask_phishing_app\gunicorn.conf.py
+flask_phishing_app\requirements.txt
+flask_phishing_app\Dockerfile
+flask_phishing_app\.env
+flask_phishing_app\.env.example
+
+## ✅ MUST COPY — Services
+flask_phishing_app\services\analysis.py
+flask_phishing_app\services\security_service.py
+flask_phishing_app\services\storage.py
+flask_phishing_app\services\__init__.py
+
+## ✅ MUST COPY — Frontend
+flask_phishing_app\static\app.css
+flask_phishing_app\static\app.js
+flask_phishing_app\static\history_center.js
+flask_phishing_app\static\login.js
+flask_phishing_app\static\theme.js
+
+## ✅ MUST COPY — HTML Templates
+flask_phishing_app\templates\index.html
+flask_phishing_app\templates\login.html
+flask_phishing_app\templates\about.html
+flask_phishing_app\templates\history_center.html
+flask_phishing_app\templates\security_layers.html
+
+## ❌ DO NOT COPY — Recreated automatically on target PC
+.venv\                  ← Venvs are machine-specific. setup_and_run.bat recreates it.
+flask_phishing_app\data\analysis_history.db   ← DB created fresh on target PC
+flask_phishing_app\runtime\                   ← Created at startup
+flask_phishing_app\static\screenshots\        ← Created at startup
+__pycache__\            ← Auto-generated
+*.pyc
+
+## ℹ️ OPTIONAL TO COPY
+flask_phishing_app\data\analysis_history.db   ← Copy ONLY if you want to bring your history

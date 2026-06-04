@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Phishing URL Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  </head>
+  <body>
+    <nav class="topbar">
+      <div class="topbar-inner">
+        <a class="brandmark brandmark-rich" href="/login"><span class="brand-emblem">P</span><span>PhishScope</span></a>
+        <div class="nav-tools">
+          <div id="primary-nav" class="nav-links">
+            <a href="/dashboard" class="{{ 'active' if request.path == '/dashboard' else '' }}">Dashboard</a>
+            <a href="/about" class="{{ 'active' if request.path == '/about' else '' }}">About</a>
+            <a href="/history-center" class="{{ 'active' if request.path == '/history-center' else '' }}">History</a>
+            <a href="/security-layers" class="{{ 'active' if request.path == '/security-layers' else '' }}">Security Layers</a>
+          </div>
+          <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+        </div>
+      </div>
+    </nav>
+    <main class="page premium-page">
+      {% if google_client_id %}
+      <script src="https://accounts.google.com/gsi/client" async defer></script>
+      {% endif %}
+      <section class="hero premium-hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Analyst Workspace</p>
+          <h1 id="dashboard-greeting">Good day</h1>
+          <p id="dashboard-lede" class="lede">Your protected phishing analysis desk is ready. Drop in a single URL or paste a list to process multiple targets in one pass.</p>
+          <p id="dashboard-quote" class="hero-quote">"Clarity is the first layer of defense."</p>
+          <div class="hero-pills">
+            <span class="inline-chip">Protected account access</span>
+            <span class="inline-chip">Single + batch in one composer</span>
+            <span class="inline-chip">Fast pass with enrichment</span>
+          </div>
+        </div>
+        <div class="hero-card premium-hero-card">
+          <div class="stat-label">Session</div>
+          <div class="stat-value" id="session-identity">Loading account...</div>
+          <div class="hero-metrics">
+            <div class="metric-tile">
+              <span>Mode</span>
+              <strong id="composer-mode-label">Single URL</strong>
+            </div>
+            <div class="metric-tile">
+              <span>Next Action</span>
+              <strong>Analyze and review</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="auth-panel" class="panel auth-panel hidden"></section>
+
+      <section class="panel composer-panel">
+        <div class="composer-head">
+          <div>
+            <p class="eyebrow">Prompt-Style Intake</p>
+            <h2>Analyze suspicious targets</h2>
+          </div>
+          <div class="composer-switcher">
+            <button id="mode-single" type="button" class="composer-tab active">Single URL</button>
+            <button id="mode-batch" type="button" class="composer-tab">Batch URLs</button>
+          </div>
+        </div>
+        <form id="analyze-form" class="composer-form">
+          <textarea id="composer-input" rows="6" placeholder="Paste a suspicious URL here or switch to batch mode to paste one URL per line."></textarea>
+          <div id="detected-urls" class="detected-urls hidden-block"></div>
+          <div class="composer-footer">
+            <div class="composer-meta">
+              <span id="composer-hint">Use single mode for one target with immediate review.</span>
+            </div>
+            <div class="composer-actions">
+              <button id="composer-submit" type="submit">Analyze</button>
+            </div>
+          </div>
+        </form>
+        <div id="status" class="status"></div>
+        <div id="batch-status" class="status"></div>
+        <div id="batch-results" class="batch-results hidden-block"></div>
+      </section>
+
+      <section id="results" class="results hidden">
+        <div class="grid two">
+          <article class="card">
+            <h2>Summary</h2>
+            <div id="summary"></div>
+          </article>
+          <article class="card">
+            <h2>Actions</h2>
+            <div id="actions" class="stack"></div>
+          </article>
+        </div>
+
+        <div class="grid three">
+          <article class="card">
+            <h2>Component Risk</h2>
+            <div id="components" class="kv-list"></div>
+          </article>
+          <article class="card">
+            <h2>Security Headers</h2>
+            <div id="headers" class="kv-list"></div>
+          </article>
+          <article class="card">
+            <h2>Threat Intelligence</h2>
+            <div id="threat-intel" class="stack"></div>
+          </article>
+        </div>
+
+        <div class="grid two">
+          <article class="card">
+            <h2>Ollama Review</h2>
+            <div id="ollama-summary" class="stack"></div>
+          </article>
+          <article class="card">
+            <h2>NLP Summary</h2>
+            <div id="nlp" class="stack"></div>
+          </article>
+        </div>
+
+        <div class="grid three charts-grid">
+          <article class="card">
+            <h2>Risk Gauge</h2>
+            <img id="chart-gauge" class="chart-image" alt="Risk gauge chart">
+          </article>
+          <article class="card">
+            <h2>Component Chart</h2>
+            <img id="chart-components" class="chart-image" alt="Component chart">
+          </article>
+          <article class="card">
+            <h2>SHAP Chart</h2>
+            <img id="chart-shap" class="chart-image" alt="SHAP chart">
+          </article>
+        </div>
+
+        <div class="grid two">
+          <article class="card">
+            <h2>SHAP Analysis</h2>
+            <div id="shap-summary" class="stack"></div>
+            <details class="expandable">
+              <summary>Show raw model output</summary>
+              <pre id="model"></pre>
+            </details>
+          </article>
+          <article class="card">
+            <h2>Screenshot</h2>
+            <div id="screenshot-wrap" class="stack"></div>
+          </article>
+        </div>
+
+        <article class="card sandbox-card">
+          <div class="sandbox-head">
+            <h2>Sandbox Preview</h2>
+            <div id="sandbox-meta" class="soft-block compact"></div>
+          </div>
+          <iframe id="sandbox-frame" sandbox="allow-same-origin" referrerpolicy="no-referrer"></iframe>
+          <details id="sandbox-source-wrap" class="expandable hidden-block">
+            <summary>Show sanitized source</summary>
+            <pre id="sandbox-source"></pre>
+          </details>
+        </article>
+
+        <div class="grid two">
+          <article class="card">
+            <h2>Analyst Notes</h2>
+            <div class="stack">
+              <textarea id="note-input" rows="4" placeholder="Add analyst note"></textarea>
+              <button id="save-note" type="button">Save Note</button>
+              <div id="notes" class="stack"></div>
+            </div>
+          </article>
+          <article class="card">
+            <h2>Network Details</h2>
+            <details class="expandable">
+              <summary>Show details</summary>
+              <pre id="network"></pre>
+            </details>
+          </article>
+        </div>
+
+        <div class="grid two">
+          <article class="card">
+            <h2>Result Feedback</h2>
+            <div class="stack">
+              <p class="muted">Tell us if this verdict helped or missed the mark. Prior user feedback is shown cautiously and never overrides the model by itself.</p>
+              <div class="composer-actions">
+                <button id="feedback-correct" type="button">Helpful</button>
+                <button id="feedback-incorrect" type="button" class="ghost">Needs Review</button>
+              </div>
+              <input id="feedback-label" type="text" placeholder="Optional corrected label, e.g. Legitimate or High Risk">
+              <textarea id="feedback-note" rows="3" placeholder="Optional note about why the output was wrong or helpful"></textarea>
+              <div id="feedback-status" class="status"></div>
+              <div id="feedback-summary" class="stack"></div>
+            </div>
+          </article>
+          <article class="card">
+            <h2>Shared Caution Layer</h2>
+            <div id="community-feedback" class="stack muted">No community feedback for this URL yet.</div>
+          </article>
+        </div>
+      </section>
+
+    </main>
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <div>
+          <p class="eyebrow">Research Archive</p>
+          <h2>Registered papers and references on phishing</h2>
+        </div>
+        <div class="footer-links">
+          <a href="https://arxiv.org/search/?query=phishing&searchtype=all">arXiv phishing papers</a>
+          <a href="https://scholar.google.com/scholar?q=phishing+detection">Google Scholar phishing detection</a>
+          <a href="https://dl.acm.org/action/doSearch?AllField=phishing+detection">ACM Digital Library search</a>
+          <a href="https://ieeexplore.ieee.org/search/searchresult.jsp?queryText=phishing%20detection">IEEE Xplore search</a>
+        </div>
+      </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
+</html>

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Security Layers | Phishing URL Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  </head>
+  <body>
+    <nav class="topbar">
+      <div class="topbar-inner">
+        <a class="brandmark brandmark-rich" href="/login"><span class="brand-emblem">P</span><span>PhishScope</span></a>
+        <div class="nav-tools">
+          <div class="nav-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/login">Login</a>
+            <a href="/about">About</a>
+            <a href="/history-center">History</a>
+            <a href="/security-layers" class="active">Security Layers</a>
+          </div>
+          <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+        </div>
+      </div>
+    </nav>
+    <main class="page">
+      <section class="hero hero-short">
+        <div class="hero-copy">
+          <p class="eyebrow">Detection Stack</p>
+          <h1>Security Layers</h1>
+          <p class="lede">The dashboard does not trust a single model score. It builds a verdict from several layers so suspicious URLs can be explained, challenged, and revisited with context.</p>
+        </div>
+        <div class="hero-card">
+          <div class="stat-label">Core Principle</div>
+          <div class="stat-value">A phishing verdict should be explainable from multiple directions.</div>
+          <div class="stat-foot">That includes model evidence, transport posture, rendered content, browser artifacts, and threat-feed correlation.</div>
+        </div>
+      </section>
+
+      <section class="grid four">
+        <article class="card feature-card">
+          <h2>Model Layer</h2>
+          <p>The trained ensemble produces the core probability and supports explainability through SHAP so the strongest features can be inspected.</p>
+        </article>
+        <article class="card feature-card">
+          <h2>Transport Layer</h2>
+          <p>DNS and SSL checks help identify suspicious hosting, certificate gaps, or weak transport posture often seen in throwaway phishing sites.</p>
+        </article>
+        <article class="card feature-card">
+          <h2>Content Layer</h2>
+          <p>HTML patterns, NLP extraction, and brand or urgency cues expose whether the page behaves like a credential lure or social-engineering asset.</p>
+        </article>
+        <article class="card feature-card">
+          <h2>Intel Layer</h2>
+          <p>Threat feeds, sandbox artifacts, screenshots, and optional Ollama summaries add context that a security reviewer can understand quickly.</p>
+        </article>
+      </section>
+
+      <section class="grid two">
+        <article class="card split-card">
+          <h2>Fast Layer</h2>
+          <div class="layer-grid">
+            <div class="layer-card">
+              <h3>URL structure</h3>
+              <p>Domain shape, suspicious tokens, redirects, and lexical patterns are scored immediately.</p>
+            </div>
+            <div class="layer-card">
+              <h3>DNS and SSL</h3>
+              <p>Fast network checks surface obvious infrastructure risks without waiting on the full enrichment pipeline.</p>
+            </div>
+            <div class="layer-card">
+              <h3>Initial NLP and headers</h3>
+              <p>Basic content cues and HTTP header review provide quick evidence for the first analyst-facing response.</p>
+            </div>
+          </div>
+        </article>
+        <article class="card split-card">
+          <h2>Enrichment Layer</h2>
+          <div class="layer-grid">
+            <div class="layer-card">
+              <h3>SHAP explainability</h3>
+              <p>Top feature impacts clarify why the model leaned toward malicious or benign classification.</p>
+            </div>
+            <div class="layer-card">
+              <h3>Screenshot and sandbox</h3>
+              <p>Rendered evidence helps confirm impersonation themes and lets the analyst inspect page behavior more safely.</p>
+            </div>
+            <div class="layer-card">
+              <h3>Threat feeds and LLM summary</h3>
+              <p>Slow external checks and narrative reasoning deepen the investigation record after the first answer is already visible.</p>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel prose-panel">
+        <h2>Scoring Logic</h2>
+        <p>The hybrid score blends ensemble output with heuristic layers instead of treating model probability as ground truth. That matters because phishing infrastructure often looks statistically normal in one dimension while failing badly in another.</p>
+        <p>Security headers are a good example: missing CSP, HSTS, COOP, CORP, or weak cookie flags do not prove phishing alone, but they raise the overall risk when the URL, content, and infrastructure already look questionable.</p>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <div>
+          <p class="eyebrow">Research Archive</p>
+          <h2>Registered papers and references on phishing</h2>
+        </div>
+        <div class="footer-links">
+          <a href="https://arxiv.org/search/?query=phishing&searchtype=all">arXiv phishing papers</a>
+          <a href="https://scholar.google.com/scholar?q=phishing+detection">Google Scholar phishing detection</a>
+          <a href="https://dl.acm.org/action/doSearch?AllField=phishing+detection">ACM Digital Library search</a>
+          <a href="https://ieeexplore.ieee.org/search/searchresult.jsp?queryText=phishing%20detection">IEEE Xplore search</a>
+        </div>
+      </div>
+    </footer>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+  </body>
+</html>

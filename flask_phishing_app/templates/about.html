@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>About | Phishing URL Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  </head>
+  <body>
+    <nav class="topbar">
+      <div class="topbar-inner">
+        <a class="brandmark brandmark-rich" href="/login"><span class="brand-emblem">P</span><span>PhishScope</span></a>
+        <div class="nav-tools">
+          <div class="nav-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/login">Login</a>
+            <a href="/about" class="active">About</a>
+            <a href="/history-center">History</a>
+            <a href="/security-layers">Security Layers</a>
+          </div>
+          <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+        </div>
+      </div>
+    </nav>
+    <main class="page">
+      <section class="hero hero-short">
+        <div class="hero-copy">
+          <p class="eyebrow">Platform Overview</p>
+          <h1>About PhishScope</h1>
+          <p class="lede">PhishScope is built to help an analyst move from a bare URL to an explainable risk decision quickly, without losing the slower evidence that makes the decision defensible.</p>
+          <div class="hero-pills">
+            <span class="inline-chip">Fast verdict</span>
+            <span class="inline-chip">Background enrichment</span>
+            <span class="inline-chip">Human-readable reasoning</span>
+          </div>
+        </div>
+        <div class="hero-card">
+          <div class="stat-label">Operating Model</div>
+          <div class="stat-value">Classifier first, investigation detail second.</div>
+          <div class="stat-foot">The UI is designed to return a usable answer immediately, then deepen the record with richer evidence as slower checks complete.</div>
+        </div>
+      </section>
+
+      <section class="grid three">
+        <article class="card feature-card">
+          <h2>What It Combines</h2>
+          <p>The dashboard merges model output with DNS, SSL, header posture, content extraction, threat intelligence, sandbox preview, and explainability artifacts.</p>
+        </article>
+        <article class="card feature-card">
+          <h2>Why It Exists</h2>
+          <p>A raw phishing probability is not enough for review or incident handling. The app turns the score into evidence an analyst can read, compare, and retain.</p>
+        </article>
+        <article class="card feature-card">
+          <h2>Who It Helps</h2>
+          <p>The interface fits security students, SOC-style triage workflows, and local investigations where speed matters but traceability still matters more.</p>
+        </article>
+      </section>
+
+      <section class="grid two">
+        <article class="card split-card">
+          <h2>How The Analysis Flows</h2>
+          <div class="story-list">
+            <div class="story-step">
+              <h3>1. Intake</h3>
+              <p>The app normalizes the URL, extracts structural signals, and prepares the feature set for the trained ensemble.</p>
+            </div>
+            <div class="story-step">
+              <h3>2. Fast Pass</h3>
+              <p>The first response returns the model score plus the most useful DNS, SSL, content, and header indicators with minimal wait time.</p>
+            </div>
+            <div class="story-step">
+              <h3>3. Enrichment</h3>
+              <p>SHAP, screenshots, sandbox rendering, threat-feed checks, and Ollama reasoning are added later so the record becomes more complete over time.</p>
+            </div>
+          </div>
+        </article>
+        <article class="card split-card">
+          <h2>What The Analyst Gets</h2>
+          <ul class="clean-list">
+            <li>A hybrid risk score with model probability and contextual signals.</li>
+            <li>Saved investigation history and per-record notes.</li>
+            <li>Explainability data instead of a black-box verdict.</li>
+            <li>HTML preview and screenshot context for suspicious pages.</li>
+            <li>Exportable reporting for follow-up and documentation.</li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="panel prose-panel">
+        <h2>Access And Workflow</h2>
+        <p>The app supports a dedicated sign-in flow with local credentials and optional Google sign-in. That keeps the investigation interface separate from authentication, while still allowing history ownership, note tracking, and cleaner auditability.</p>
+        <p>The overall design is intentionally analyst-facing: it favors readable summaries, layered context, and saved records over a minimal single-score demo page.</p>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <div>
+          <p class="eyebrow">Research Archive</p>
+          <h2>Registered papers and references on phishing</h2>
+        </div>
+        <div class="footer-links">
+          <a href="https://arxiv.org/search/?query=phishing&searchtype=all">arXiv phishing papers</a>
+          <a href="https://scholar.google.com/scholar?q=phishing+detection">Google Scholar phishing detection</a>
+          <a href="https://dl.acm.org/action/doSearch?AllField=phishing+detection">ACM Digital Library search</a>
+          <a href="https://ieeexplore.ieee.org/search/searchresult.jsp?queryText=phishing%20detection">IEEE Xplore search</a>
+        </div>
+      </div>
+    </footer>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+  </body>
+</html>

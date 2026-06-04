@@ -1,0 +1,110 @@
+PhishScope Windows CMD Setup and Run Guide
+
+This guide uses Windows Command Prompt (cmd.exe), not PowerShell.
+
+1. Install prerequisites
+
+- Install Python 3.12.x and make sure "Add Python to PATH" is enabled.
+- Install Google Chrome or Microsoft Edge.
+- If Playwright screenshot capture is used, Chromium will be installed later by command.
+
+2. Open Command Prompt and move into the project
+
+cd C:\path\to\Phishing
+
+3. Create a virtual environment for the Flask app
+
+cd flask_phishing_app
+py -3.12 -m venv venv
+
+4. Activate the virtual environment
+
+venv\Scripts\activate
+
+5. Install Python dependencies
+
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+
+6. Install Playwright browser support for screenshots
+
+python -m playwright install chromium
+
+7. Set environment variables for a normal local run
+
+set APP_ENV=development
+set FLASK_DEBUG=0
+set APP_HOST=127.0.0.1
+set APP_PORT=5000
+set APP_REQUIRE_AUTH=1
+set APP_USERNAME=admin
+set APP_PASSWORD=admin
+set ENABLE_BACKGROUND_WORKER=1
+
+Notes:
+- ENABLE_BACKGROUND_WORKER=1 is important. It allows the web app to complete the deferred screenshot and enrichment work locally.
+- The web app now performs the full enrichment during a normal local run, so screenshot, sandbox, SHAP, and other sections should return in the main result instead of staying deferred.
+- The app automatically reads model files from the parent folder:
+  - final_ensemble.pkl
+  - preprocessor.pkl
+  - selected_features.txt
+
+8. Start the app
+
+python app.py
+
+9. Open the app
+
+Open this URL in your browser:
+
+http://127.0.0.1:5000/login
+
+Default development login:
+
+username: admin
+password: admin
+
+10. What to expect
+
+- A submitted URL returns the full analysis in one pass for a normal local web run.
+- Screenshot, sandbox, SHAP, threat enrichment, and Ollama review can still take longer than a minimal prediction because they are included directly in that request.
+- If an optional service is unavailable, that section will show an unavailable/error message rather than waiting forever in deferred state.
+
+11. Optional: run the worker separately
+
+You do not need this for a normal local run anymore, but if you want a separate worker process:
+
+In Command Prompt window 1:
+
+cd C:\path\to\Phishing\flask_phishing_app
+venv\Scripts\activate
+set APP_ENV=development
+set FLASK_DEBUG=0
+set APP_HOST=127.0.0.1
+set APP_PORT=5000
+set ENABLE_BACKGROUND_WORKER=0
+python app.py
+
+In Command Prompt window 2:
+
+cd C:\path\to\Phishing\flask_phishing_app
+venv\Scripts\activate
+set APP_ENV=development
+set ENABLE_BACKGROUND_WORKER=1
+set APP_ROLE=worker
+python run_worker.py
+
+12. If screenshots still do not appear
+
+- Re-run:
+  python -m playwright install chromium
+- Make sure the target URL can actually be reached from your machine.
+- Some websites block headless browsers or timeout before a screenshot is captured.
+
+13. If the model fails to load
+
+- Confirm these files exist in C:\path\to\Phishing:
+  - final_ensemble.pkl
+  - preprocessor.pkl
+  - selected_features.txt
+- Use Python 3.12 if possible, since the current environment and saved artifacts are closest to that setup.

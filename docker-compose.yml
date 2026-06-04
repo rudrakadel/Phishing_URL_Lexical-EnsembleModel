@@ -1,0 +1,56 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: flask_phishing_app/Dockerfile
+    env_file:
+      - flask_phishing_app/.env.example
+    environment:
+      APP_ROLE: web
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: flask_phishing_app/Dockerfile
+    env_file:
+      - flask_phishing_app/.env.example
+    environment:
+      APP_ROLE: worker
+    command: ["python", "run_worker.py"]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: phishscope
+      POSTGRES_USER: phishscope
+      POSTGRES_PASSWORD: phishscope
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U phishscope -d phishscope"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
