@@ -160,7 +160,7 @@ echo.
 
 :: ── Install Playwright Chromium browser ───────────────────────────
 if not exist "%PLAYWRIGHT_MARKER%" (
-    echo [*] Installing Playwright Chromium browser (one-time, ~150MB)...
+    echo [*] Installing Playwright Chromium browser - one-time, ~150MB...
     python -m playwright install chromium
     if errorlevel 1 (
         color 0E
