@@ -40,6 +40,9 @@ if not log.handlers:
 def create_app() -> Flask:
     config = AppConfig.from_env(BASE_DIR, APP_ROOT)
     config.validate()
+    log.info("startup: configuration loaded role=%s env=%s host=%s port=%s", config.app_role, config.env, config.host, config.port)
+    if config.require_auth and config.app_username == "admin" and config.app_password == "admin" and not config.app_password_hash:
+        log.warning("startup: default admin credentials are enabled; change APP_USERNAME/APP_PASSWORD before sharing this app")
 
     app = Flask(__name__, template_folder="templates", static_folder="static")
     app.secret_key = config.secret_key or "dev-only-secret-key"
@@ -58,9 +61,14 @@ def create_app() -> Flask:
     app.config["SESSION_COOKIE_NAME"] = config.session_cookie_name
     app.permanent_session_lifetime = timedelta(minutes=config.permanent_session_lifetime_minutes)
 
+    log.info("startup: initializing history store")
     history = HistoryStore(app.config["DATABASE_URL"])
+    log.info("startup: loading analyzer and model artifacts from %s", app.config["MODEL_DIR"])
     analyzer = PhishingAnalyzer(BASE_DIR=BASE_DIR, model_dir=Path(app.config["MODEL_DIR"]))
+    log.info("startup: analyzer ready model_ready=%s missing_dependencies=%s", analyzer.model_ready, analyzer.missing_dependencies)
+    log.info("startup: initializing database")
     history.init_db()
+    log.info("startup: database ready")
 
     metrics = MetricsRegistry()
     rate_limiter = RateLimiter(config.rate_limit_window_seconds, redis_url=analyzer.redis_url)
@@ -74,7 +82,10 @@ def create_app() -> Flask:
     )
     worker_active_in_process = bool(config.enable_worker and config.app_role == "worker")
     if worker_active_in_process:
+        log.info("startup: starting in-process enrichment worker")
         enrichment_queue.start()
+    else:
+        log.info("startup: in-process enrichment worker disabled role=%s enable_worker=%s", config.app_role, config.enable_worker)
 
     def json_error(message: str, status: int = 400) -> tuple[Response, int]:
         return jsonify({"error": message, "request_id": getattr(g, "request_id", None)}), status
@@ -213,6 +224,28 @@ def create_app() -> Flask:
         expected = app.config["APP_PASSWORD"]
         return bool(expected) and secrets.compare_digest(expected, password)
 
+    def health_payload() -> dict:
+        database_ok = history.healthcheck()
+        try:
+            jobs_pending = history.count_pending_jobs()
+        except Exception as exc:
+            log.warning("health: pending job count unavailable: %s", exc)
+            jobs_pending = None
+        return {
+            "status": "ok" if database_ok and analyzer.model_ready else "degraded",
+            "app_role": config.app_role,
+            "environment": config.env,
+            "model_ready": analyzer.model_ready,
+            "model_dir": analyzer.model_dir.as_posix(),
+            "missing_dependencies": analyzer.missing_dependencies,
+            "optional_services": analyzer.optional_services_status(),
+            "database_ok": database_ok,
+            "jobs_pending": jobs_pending,
+            "worker_enabled": config.enable_worker,
+            "worker_active_in_process": worker_active_in_process,
+            "auth_required": app.config["REQUIRE_AUTH"],
+        }
+
     @app.before_request
     def attach_request_context():
         g.request_id = request.headers.get("X-Request-ID") or uuid.uuid4().hex
@@ -237,7 +270,10 @@ def create_app() -> Flask:
         duration = time.perf_counter() - g.request_started
         metrics.increment("phishscope_http_requests_total")
         metrics.observe("phishscope_http_request_duration", duration)
-        metrics.gauge("phishscope_jobs_pending", float(history.count_pending_jobs()))
+        try:
+            metrics.gauge("phishscope_jobs_pending", float(history.count_pending_jobs()))
+        except Exception as exc:
+            log.warning("metrics: pending job count unavailable: %s", exc)
         log.info(
             json.dumps(
                 {
@@ -256,6 +292,19 @@ def create_app() -> Flask:
     @app.get("/")
     def root():
         return redirect(url_for("login_page"))
+
+    @app.get("/health")
+    def public_health():
+        payload = health_payload()
+        status = 200 if payload["database_ok"] else 503
+        return jsonify(payload), status
+
+    @app.get("/ready")
+    def public_ready():
+        payload = health_payload()
+        ready = bool(payload["database_ok"] and payload["model_ready"])
+        payload["ready"] = ready
+        return jsonify(payload), 200 if ready else 503
 
     @app.get("/dashboard")
     @auth_required
@@ -395,21 +444,7 @@ def create_app() -> Flask:
     @app.get("/api/health")
     @auth_required
     def health():
-        return jsonify(
-            {
-                "status": "ok",
-                "app_role": config.app_role,
-                "environment": config.env,
-                "model_ready": analyzer.model_ready,
-                "model_dir": analyzer.model_dir.as_posix(),
-                "missing_dependencies": analyzer.missing_dependencies,
-                "optional_services": analyzer.optional_services_status(),
-                "database_ok": history.healthcheck(),
-                "jobs_pending": history.count_pending_jobs(),
-                "worker_enabled": config.enable_worker,
-                "worker_active_in_process": worker_active_in_process,
-            }
-        )
+        return jsonify(health_payload())
 
     @app.get("/api/metrics")
     def metrics_view():

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse
@@ -22,13 +23,20 @@ class HistoryStore:
         else:
             self.db_path = database_url
 
+    @contextmanager
     def _connect(self):
+        conn = None
         if self.kind == "postgres":
             if psycopg is None:
                 raise RuntimeError("psycopg is required for PostgreSQL support")
-            return psycopg.connect(self.database_url)
-        Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
-        return sqlite3.connect(self.db_path, timeout=30)
+            conn = psycopg.connect(self.database_url)
+        else:
+            Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
+            conn = sqlite3.connect(self.db_path, timeout=30)
+        try:
+            yield conn
+        finally:
+            conn.close()
 
     def _fetchall(self, query: str, params: tuple = ()) -> list[tuple]:
         with self._connect() as conn:

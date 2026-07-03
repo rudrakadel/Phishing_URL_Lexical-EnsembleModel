@@ -37,6 +37,7 @@ flask_phishing_app/data/*.db-wal
 # ── Runtime / Generated at startup ───────────
 flask_phishing_app/runtime/
 flask_phishing_app/static/screenshots/
+.phishscope_versions/
 
 # ── Playwright ────────────────────────────────
 .playwright_chromium_installed
