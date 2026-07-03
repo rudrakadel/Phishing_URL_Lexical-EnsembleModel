@@ -1,0 +1,15 @@
+[Unit]
+Description=PhishScope enrichment worker
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/phishscope/flask_phishing_app
+Environment=APP_ROLE=worker
+EnvironmentFile=/opt/phishscope/flask_phishing_app/.env
+ExecStart=/opt/phishscope/flask_phishing_app/.venv/bin/python run_worker.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,15 @@
+[Unit]
+Description=PhishScope web service
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/phishscope/flask_phishing_app
+Environment=APP_ROLE=web
+EnvironmentFile=/opt/phishscope/flask_phishing_app/.env
+ExecStart=/opt/phishscope/flask_phishing_app/.venv/bin/gunicorn -c gunicorn.conf.py app:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

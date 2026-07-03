@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login | Phishing URL Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+    {% if google_client_id %}
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    {% endif %}
+  </head>
+  <body class="login-body" data-google-client-id="{{ google_client_id or '' }}">
+    <nav class="topbar">
+      <div class="topbar-inner">
+        <a class="brandmark brandmark-rich" href="/login"><span class="brand-emblem">P</span><span>PhishScope</span></a>
+        <div class="nav-tools">
+          <div class="nav-links">
+            <a href="/login" class="active">Login</a>
+            <a href="/about">About</a>
+            <a href="/security-layers">Security Layers</a>
+          </div>
+          <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+        </div>
+      </div>
+    </nav>
+    <div class="login-orb login-orb-a" aria-hidden="true"></div>
+    <div class="login-orb login-orb-b" aria-hidden="true"></div>
+    <div class="login-grid-glow" aria-hidden="true"></div>
+    <main class="login-shell">
+      <section class="login-side">
+        <div class="login-side-stack">
+          <div>
+            <p class="eyebrow">Private Analyst Space</p>
+            <h1>PhishScope Control Desk</h1>
+            <p class="lede">Register once, sign in, and keep your phishing investigations, notes, verdicts, and reports in a protected workspace.</p>
+          </div>
+          <div class="login-badge-row">
+            <span class="login-badge">GM / GN greeting</span>
+            <span class="login-badge">Protected dashboard</span>
+            <span class="login-badge">Batch + single URL flow</span>
+          </div>
+          <div class="mini-grid">
+            <div class="mini-stat">
+              <span>Default access</span>
+              <strong>Quick fallback credentials are enabled for development: <span class="cred-chip">admin / admin</span></strong>
+            </div>
+            <div class="mini-stat">
+              <span>Registration rules</span>
+              <strong>Name, mobile, username, and password constraints keep sign-up basic but valid.</strong>
+            </div>
+          </div>
+          <div class="login-feature-list">
+            <div class="login-feature">
+              <strong>Fast first-pass</strong>
+              <span>Initial phishing scoring lands quickly while deeper enrichment continues behind the scenes.</span>
+            </div>
+            <div class="login-feature">
+              <strong>Premium analyst workflow</strong>
+              <span>A single workspace handles direct URL checks, batch analysis, saved notes, and PDF exports.</span>
+            </div>
+            <div class="login-feature">
+              <strong>Human-readable reasoning</strong>
+              <span>Model output, security signals, and explainability layers are kept visible instead of hidden.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="login-card-wrap">
+        <div class="login-card login-card-animated">
+          <div class="auth-switcher">
+            <button id="show-signin" type="button" class="auth-tab active">Sign In</button>
+            <button id="show-register" type="button" class="auth-tab">Register</button>
+          </div>
+
+          <div id="signin-panel" class="auth-mode-panel">
+            <p class="eyebrow">Sign In</p>
+            <h2>Access Dashboard</h2>
+            <p class="muted">Return to your workspace and continue investigating suspicious URLs.</p>
+            <div class="stack">
+              <input id="login-username-page" type="text" placeholder="Username or mobile">
+              <input id="login-password-page" type="password" placeholder="Password">
+              <button id="login-button-page" type="button">Sign In</button>
+              <div id="google-login-page" class="google-slot"></div>
+            </div>
+          </div>
+
+          <div id="register-panel" class="auth-mode-panel hidden-block">
+            <p class="eyebrow">Register</p>
+            <h2>Create Account</h2>
+            <p class="muted">Set up your analyst profile to unlock the protected dashboard.</p>
+            <div class="stack">
+              <input id="register-first-name-page" type="text" placeholder="First name">
+              <input id="register-last-name-page" type="text" placeholder="Last name (optional)">
+              <input id="register-mobile-page" type="tel" placeholder="Mobile number">
+              <input id="register-username-page" type="text" placeholder="Username">
+              <input id="register-password-page" type="password" placeholder="Password">
+              <div class="auth-constraints">Use a 10-digit mobile number, a 3-40 character username, and a password with at least 8 characters.</div>
+              <button id="register-button-page" type="button">Create Account</button>
+            </div>
+          </div>
+
+          <div id="login-page-status" class="status"></div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <div>
+          <p class="eyebrow">Research Archive</p>
+          <h2>Registered papers and references on phishing</h2>
+        </div>
+        <div class="footer-links">
+          <a href="https://arxiv.org/search/?query=phishing&searchtype=all">arXiv phishing papers</a>
+          <a href="https://scholar.google.com/scholar?q=phishing+detection">Google Scholar phishing detection</a>
+          <a href="https://dl.acm.org/action/doSearch?AllField=phishing+detection">ACM Digital Library search</a>
+          <a href="https://ieeexplore.ieee.org/search/searchresult.jsp?queryText=phishing%20detection">IEEE Xplore search</a>
+        </div>
+      </div>
+    </footer>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='login.js') }}"></script>
+  </body>
+</html>

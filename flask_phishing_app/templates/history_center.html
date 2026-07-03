@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>History Center | Phishing URL Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  </head>
+  <body>
+    <nav class="topbar">
+      <div class="topbar-inner">
+        <a class="brandmark brandmark-rich" href="/login"><span class="brand-emblem">P</span><span>PhishScope</span></a>
+        <div class="nav-tools">
+          <div class="nav-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/login">Login</a>
+            <a href="/about">About</a>
+            <a href="/history-center" class="active">History</a>
+            <a href="/security-layers">Security Layers</a>
+          </div>
+          <button type="button" class="theme-toggle" data-theme-toggle>Dark mode</button>
+        </div>
+      </div>
+    </nav>
+    <main class="page">
+      <section class="hero hero-short">
+        <div class="hero-copy">
+          <p class="eyebrow">History Center</p>
+          <h1>Investigation Records</h1>
+          <p class="lede">Search previous analyses, review verdicts, spot cached results, and reopen individual records for follow-up.</p>
+          <div class="hero-pills">
+            <span class="inline-chip">Reopen saved cases</span>
+            <span class="inline-chip">Review enrichment status</span>
+            <span class="inline-chip">Track analyst notes</span>
+          </div>
+        </div>
+        <div class="hero-card">
+          <div class="stat-label">What You See Here</div>
+          <div class="stat-value">Stored decisions, user ownership, cache usage, and timestamps.</div>
+          <div class="stat-foot">Use it as the operational ledger for repeated phishing investigations.</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="history-toolbar">
+          <input id="history-search" type="text" placeholder="Search URL, verdict, or user">
+          <div class="history-filter-group" aria-label="History verdict filter">
+            <button type="button" class="history-filter active" data-history-filter="all">All</button>
+            <button type="button" class="history-filter" data-history-filter="phishing">Phishing</button>
+            <button type="button" class="history-filter" data-history-filter="not-phishing">Not phishing</button>
+          </div>
+          <button id="history-refresh-page" type="button">Refresh</button>
+        </div>
+        <div id="history-summary-page" class="history-summary"></div>
+        <div class="history-center-layout">
+          <div id="history-table-page" class="history-table-wrap"></div>
+          <aside class="history-aside-stack">
+            <div id="history-detail" class="history-detail">
+              <div class="history-detail-head">
+                <div>
+                  <p class="eyebrow">Record Detail</p>
+                  <h2 id="detail-title">Select a record</h2>
+                </div>
+                <button id="detail-close" type="button" class="ghost">Close</button>
+              </div>
+              <div id="detail-body" class="stack muted">Open a history row to inspect the saved record, enrichment status, notes, and decision context.</div>
+            </div>
+            <div class="card feature-card">
+              <h2>How To Use This View</h2>
+              <ul class="clean-list">
+                <li>Search by URL, verdict, or analyst to narrow repeated campaigns.</li>
+                <li>Open any row to inspect the saved payload and enrichment status.</li>
+                <li>Check cache usage to see whether a result was reused or newly generated.</li>
+                <li>Use the notes trail to preserve analyst reasoning between passes.</li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="grid three">
+        <article class="card feature-card">
+          <h2>Case Retention</h2>
+          <p>Stored records let you compare current behavior against earlier investigations instead of re-triaging the same domain from scratch.</p>
+        </article>
+        <article class="card feature-card">
+          <h2>Ownership</h2>
+          <p>User and auth-provider metadata make it easier to understand who ran an analysis and how the result entered the system.</p>
+        </article>
+        <article class="card feature-card">
+          <h2>Follow-Up</h2>
+          <p>The history view is meant to support recall, note-taking, and repeat review when a suspicious URL evolves over time.</p>
+        </article>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <div>
+          <p class="eyebrow">Research Archive</p>
+          <h2>Registered papers and references on phishing</h2>
+        </div>
+        <div class="footer-links">
+          <a href="https://arxiv.org/search/?query=phishing&searchtype=all">arXiv phishing papers</a>
+          <a href="https://scholar.google.com/scholar?q=phishing+detection">Google Scholar phishing detection</a>
+          <a href="https://dl.acm.org/action/doSearch?AllField=phishing+detection">ACM Digital Library search</a>
+          <a href="https://ieeexplore.ieee.org/search/searchresult.jsp?queryText=phishing%20detection">IEEE Xplore search</a>
+        </div>
+      </div>
+    </footer>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='history_center.js') }}"></script>
+  </body>
+</html>

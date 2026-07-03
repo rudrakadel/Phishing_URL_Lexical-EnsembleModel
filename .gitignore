@@ -1,0 +1,148 @@
+# ─────────────────────────────────────────────
+#  PhishScope — .gitignore
+# ─────────────────────────────────────────────
+
+# ── Python ────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.pyc
+*.pyw
+*.pyz
+
+# ── Virtual Environments ──────────────────────
+# Venvs are machine-specific — recreated by setup_and_run.bat
+.venv/
+venv/
+env/
+ENV/
+.env.bak
+.venv.bak
+
+# ── Environment / Secrets ─────────────────────
+# NEVER commit real secrets — only commit .env.example
+.env
+!.env.example
+
+# ── Database ──────────────────────────────────
+# The SQLite database is created fresh on each machine
+flask_phishing_app/data/*.db
+flask_phishing_app/data/*.db-shm
+flask_phishing_app/data/*.db-wal
+*.sqlite3
+*.sqlite
+
+# ── Runtime / Generated at startup ───────────
+flask_phishing_app/runtime/
+flask_phishing_app/static/screenshots/
+
+# ── Playwright ────────────────────────────────
+.playwright_chromium_installed
+
+# ── Matplotlib cache ──────────────────────────
+flask_phishing_app/runtime/matplotlib/
+flask_phishing_app/runtime/tldextract-cache/
+
+# ── Build / Distribution ──────────────────────
+dist/
+build/
+*.egg-info/
+*.egg
+MANIFEST
+.eggs/
+
+# ── Pip / Packaging ───────────────────────────
+pip-log.txt
+pip-delete-this-directory.txt
+.installed.cfg
+lib/
+lib64/
+
+# ── Pytest / Testing ──────────────────────────
+.pytest_cache/
+.tox/
+.nox/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+nosetests.xml
+
+# ── Type checkers ─────────────────────────────
+.mypy_cache/
+.pytype/
+.pyre/
+.dmypy.json
+dmypy.json
+
+# ── Jupyter Notebooks ─────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── IDEs ──────────────────────────────────────
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+.project
+.pydevproject
+
+# ── OS Files ──────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ── Logs ──────────────────────────────────────
+*.log
+logs/
+*.out
+
+# ── Temp / Scratch ────────────────────────────
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+~$*
+
+# ── PDF Reports (generated on-demand) ─────────
+phishing-report-*.pdf
+
+# ── Unnecessary / Legacy archived folder ──────
+# Contains old notebooks, datasets, old models — too large for GitHub
+unnecessary/
+
+# ── Large dataset files ───────────────────────
+*.csv
+*.tsv
+*.xlsx
+*.xls
+*.parquet
+*.feather
+datasets/
+
+# ── Compiled / Trained model binaries ─────────
+# The 3 trained models in Model/ ARE committed (small enough for GitHub).
+# Old or backup models below are excluded.
+Model/backups/
+*.model.bak
+
+# ── Docker ────────────────────────────────────
+# Compose overrides with local secrets are excluded
+docker-compose.override.yml
+docker-compose.local.yml
+
+# ── Node (if any frontend tooling added later) ─
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

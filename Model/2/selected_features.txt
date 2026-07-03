@@ -1,0 +1,10 @@
+nb_www
+longest_word_path
+phish_hints
+nb_hyperlinks
+ratio_extHyperlinks
+domain_age
+web_traffic
+google_index
+page_rank
+status_encoded
