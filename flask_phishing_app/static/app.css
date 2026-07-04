@@ -681,16 +681,25 @@ button.ghost {
 
 .prob-high {
   color: #b91c1c;
-  background: linear-gradient(90deg, #ef4444, #b91c1c);
 }
 
 .prob-medium {
   color: #b45309;
-  background: linear-gradient(90deg, #f59e0b, #b45309);
 }
 
 .prob-low {
   color: #166534;
+}
+
+.probability-bar .prob-high {
+  background: linear-gradient(90deg, #ef4444, #b91c1c);
+}
+
+.probability-bar .prob-medium {
+  background: linear-gradient(90deg, #f59e0b, #b45309);
+}
+
+.probability-bar .prob-low {
   background: linear-gradient(90deg, #22c55e, #166534);
 }
 
@@ -1005,13 +1014,18 @@ pre {
   display: block;
   width: 100%;
   min-width: 0;
+  background: rgba(255, 255, 255, 0.88);
   border: 0;
   border-radius: 0;
   box-shadow: none;
   text-align: left;
   text-decoration: none;
-  color: inherit;
+  color: var(--ink);
   cursor: pointer;
+}
+
+.records-link .row-subline {
+  color: var(--muted);
 }
 
 .records-link:hover {
