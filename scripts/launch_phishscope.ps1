@@ -9,6 +9,8 @@ $ReqHashFile = Join-Path $VenvDir ".requirements.sha256"
 $PlaywrightMarker = Join-Path $VenvDir ".playwright_chromium_installed"
 $VersionsDir = Join-Path $ProjectDir ".phishscope_versions"
 $AppUrl = "http://127.0.0.1:5000"
+$OllamaUrl = "http://127.0.0.1:11434"
+$OllamaModel = "deepseek-r1:1.5b"
 $script:LocalSecret = ""
 
 function Write-Step($Message) {
@@ -258,6 +260,50 @@ function Ensure-Playwright {
     Write-Ok "Playwright Chromium ready."
 }
 
+function Test-OllamaApi {
+    try {
+        Invoke-RestMethod -Uri "$OllamaUrl/api/tags" -TimeoutSec 3 | Out-Null
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+function Ensure-Ollama {
+    $ollamaCommand = Get-Command "ollama" -ErrorAction SilentlyContinue
+    if (-not $ollamaCommand) {
+        Write-Warn "Ollama is not installed or not on PATH. AI review will use heuristic fallback."
+        return
+    }
+
+    if (-not (Test-OllamaApi)) {
+        Write-Step "Starting Ollama."
+        Start-Process -FilePath $ollamaCommand.Source -ArgumentList "serve" -WindowStyle Hidden | Out-Null
+        $deadline = (Get-Date).AddSeconds(20)
+        while ((Get-Date) -lt $deadline) {
+            if (Test-OllamaApi) {
+                break
+            }
+            Start-Sleep -Seconds 2
+        }
+    }
+
+    if (-not (Test-OllamaApi)) {
+        Write-Warn "Ollama did not respond on $OllamaUrl. AI review will use heuristic fallback."
+        return
+    }
+
+    $tags = Invoke-RestMethod -Uri "$OllamaUrl/api/tags" -TimeoutSec 5
+    $availableModels = @($tags.models | ForEach-Object { $_.name })
+    if ($availableModels -notcontains $OllamaModel) {
+        Write-Warn "Configured Ollama model '$OllamaModel' is not installed. Installed models: $($availableModels -join ', ')"
+        Write-Warn "Run: ollama pull $OllamaModel"
+        return
+    }
+
+    Write-Ok "Ollama is reachable. Model selected: $OllamaModel"
+}
+
 function Write-LocalEnv {
     New-Item -ItemType Directory -Force -Path (Join-Path $AppDir "data") | Out-Null
     New-Item -ItemType Directory -Force -Path (Join-Path $AppDir "runtime") | Out-Null
@@ -295,7 +341,7 @@ function Write-LocalEnv {
         "SCREENSHOT_TIMEOUT_MS=15000",
         "PHISHING_MODEL_DIR=",
         "OLLAMA_URL=http://127.0.0.1:11434/api/generate",
-        "OLLAMA_MODEL=deepseek:1.5b"
+        "OLLAMA_MODEL=$OllamaModel"
     )
     Set-Content -Path $envPath -Value $content -Encoding ASCII
     Write-Ok "Local .env written for this machine."
@@ -315,8 +361,8 @@ function Set-AppEnvironment {
     $env:REDIS_URL = ""
     $env:ENABLE_BACKGROUND_WORKER = "1"
     $env:PHISHING_MODEL_DIR = ""
-    $env:OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
-    $env:OLLAMA_MODEL = "deepseek:1.5b"
+    $env:OLLAMA_URL = "$OllamaUrl/api/generate"
+    $env:OLLAMA_MODEL = $OllamaModel
 }
 
 Write-Host "================================================================="
@@ -338,6 +384,7 @@ Write-Ok "Python found: $pythonDisplay"
 $venvPython = Ensure-Venv -PythonCommand $pythonCommand
 Ensure-Packages -PythonExe $venvPython
 Ensure-Playwright -PythonExe $venvPython
+Ensure-Ollama
 Write-LocalEnv
 Set-AppEnvironment
 

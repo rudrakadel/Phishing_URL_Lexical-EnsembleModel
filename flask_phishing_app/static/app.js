@@ -377,9 +377,19 @@ function greetingPrefix(hours) {
   return "Good night";
 }
 
+function getIstHours() {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Kolkata",
+    hour: "numeric",
+    hour12: false,
+  }).formatToParts(new Date());
+  const hour = Number(parts.find((part) => part.type === "hour")?.value ?? new Date().getHours());
+  return hour === 24 ? 0 : hour;
+}
+
 function updateGreeting() {
   if (!dashboardGreeting || !sessionIdentity) return;
-  const hours = new Date().getHours();
+  const hours = getIstHours();
   const firstName = authState.first_name || "Analyst";
   const quote = hours < 12
     ? '"Start sharp. Small signals become big catches."'

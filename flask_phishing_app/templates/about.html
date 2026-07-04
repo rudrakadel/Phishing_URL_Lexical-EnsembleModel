@@ -11,9 +11,8 @@
       <div class="topbar-inner">
         <a class="brandmark brandmark-rich" href="/login"><span class="brand-emblem">P</span><span>PhishScope</span></a>
         <div class="nav-tools">
-          <div class="nav-links">
+          <div id="primary-nav" class="nav-links">
             <a href="/dashboard">Dashboard</a>
-            <a href="/login">Login</a>
             <a href="/about" class="active">About</a>
             <a href="/history-center">History</a>
             <a href="/security-layers">Security Layers</a>
@@ -106,6 +105,7 @@
         </div>
       </div>
     </footer>
+    <script src="{{ url_for('static', filename='nav.js') }}"></script>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
   </body>
 </html>

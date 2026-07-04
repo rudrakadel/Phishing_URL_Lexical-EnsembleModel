@@ -380,8 +380,19 @@ class PhishingAnalyzer:
             return {"probability": 0.5, "prediction": "unknown"}
 
     def optional_services_status(self) -> dict[str, Any]:
+        ollama_reachable = False
+        ollama_error = None
+        if self.http is not None:
+            try:
+                response = self._request("GET", self.ollama_url.replace("/api/generate", "/api/tags"), timeout=2)
+                ollama_reachable = response.ok
+            except Exception as exc:
+                ollama_error = str(exc)
         return {
             "ollama_model": self.ollama_model,
+            "ollama_url": self.ollama_url,
+            "ollama_reachable": ollama_reachable,
+            "ollama_error": ollama_error,
             "virustotal_configured": bool(self.virustotal_api_key),
             "redis_configured": bool(self.redis_url),
             "redis_available": self.redis_client is not None,
