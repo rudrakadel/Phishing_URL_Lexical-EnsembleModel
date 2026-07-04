@@ -7,6 +7,7 @@ const composerModeLabel = document.getElementById("composer-mode-label");
 const dashboardGreeting = document.getElementById("dashboard-greeting");
 const dashboardLede = document.getElementById("dashboard-lede");
 const dashboardQuote = document.getElementById("dashboard-quote");
+const dashboardIstTime = document.getElementById("dashboard-ist-time");
 const sessionIdentity = document.getElementById("session-identity");
 const primaryNav = document.getElementById("primary-nav");
 const batchStatus = document.getElementById("batch-status");
@@ -53,6 +54,7 @@ let enrichmentPollId = null;
 let composerMode = "single";
 let lastBatchItems = [];
 let selectedBatchUrl = null;
+let greetingTimerId = null;
 
 function pretty(value) {
   return JSON.stringify(value, null, 2);
@@ -372,36 +374,55 @@ async function logout() {
 }
 
 function greetingPrefix(hours) {
-  if (hours < 12) return "Good morning";
-  if (hours < 18) return "Good afternoon";
+  if (hours >= 5 && hours < 12) return "Good morning";
+  if (hours >= 12 && hours < 17) return "Good afternoon";
+  if (hours >= 17 && hours < 22) return "Good evening";
   return "Good night";
 }
 
-function getIstHours() {
-  const parts = new Intl.DateTimeFormat("en-US", {
+function getIstParts() {
+  const formatter = new Intl.DateTimeFormat("en-IN", {
     timeZone: "Asia/Kolkata",
-    hour: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
     hour12: false,
-  }).formatToParts(new Date());
+  });
+  const parts = formatter.formatToParts(new Date());
   const hour = Number(parts.find((part) => part.type === "hour")?.value ?? new Date().getHours());
-  return hour === 24 ? 0 : hour;
+  const minute = Number(parts.find((part) => part.type === "minute")?.value ?? 0);
+  return { hour: hour === 24 ? 0 : hour, minute };
+}
+
+function formatIstTime({ hour, minute }) {
+  const suffix = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour % 12 || 12;
+  return `${displayHour}:${String(minute).padStart(2, "0")} ${suffix}`;
 }
 
 function updateGreeting() {
   if (!dashboardGreeting || !sessionIdentity) return;
-  const hours = getIstHours();
+  const ist = getIstParts();
+  const hours = ist.hour;
   const firstName = authState.first_name || "Analyst";
-  const quote = hours < 12
+  const quote = hours >= 5 && hours < 12
     ? '"Start sharp. Small signals become big catches."'
-    : hours < 18
+    : hours >= 12 && hours < 17
       ? '"Good investigations come from patient pattern reading."'
-      : '"Slow down, verify, and let the evidence speak."';
+      : hours >= 17 && hours < 22
+        ? '"Keep the review steady. Patterns show up with context."'
+        : '"Slow down, verify, and let the evidence speak."';
   dashboardGreeting.textContent = `${greetingPrefix(hours)}, ${firstName}`;
   dashboardLede.textContent = composerMode === "batch"
     ? `Your protected phishing analysis desk is ready, ${firstName}. Paste multiple URLs and process them in a single review cycle.`
     : `Your protected phishing analysis desk is ready, ${firstName}. Drop in a suspicious URL and review the verdict, evidence, and enrichment layers.`;
   if (dashboardQuote) dashboardQuote.textContent = quote;
+  if (dashboardIstTime) dashboardIstTime.textContent = `${formatIstTime(ist)} IST`;
   sessionIdentity.textContent = `${firstName} - ${authState.username || "analyst"}`;
+}
+
+function startGreetingClock() {
+  if (greetingTimerId) clearInterval(greetingTimerId);
+  greetingTimerId = setInterval(updateGreeting, 60000);
 }
 
 function setComposerMode(mode) {
@@ -800,6 +821,7 @@ if (refreshHistory) {
 (async () => {
   try {
     await loadAuthStatus();
+    startGreetingClock();
     setComposerMode("single");
     if (historyBox) {
       await loadHistory();
