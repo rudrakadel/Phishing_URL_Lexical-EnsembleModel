@@ -549,6 +549,587 @@ How to combine machine learning with practical web security signals, how to make
 
 It reduces the gap between a raw phishing score and an analyst-readable investigation report.
 
-**What would you do with Rs. 10 lakh?**
 
-Improve dataset quality, retrain models, deploy to cloud, add PostgreSQL and Redis workers, build a browser extension, add privacy redaction, improve UI/UX, and perform real-world testing.
+## Deep Technical Viva Answers
+
+These answers are for stricter external viva questions where the examiner asks about exact implementation order, leakage, ensemble design, deployment, and limitations.
+
+## 1. Exact End-to-End ML Pipeline
+
+**Question:** What is the exact end-to-end pipeline: data source -> feature extraction -> preprocessing -> train/test split -> SMOTE -> model training -> evaluation -> deployment? Where does SMOTE sit relative to the split?
+
+**Answer:**
+
+In the current repository, the clearly available training script is:
+
+```text
+Model\1\train_tier1.py
+```
+
+That script trains the Tier 1 lexical URL model. Its actual order is:
+
+1. Load dataset from one of these paths:
+
+```text
+phishing_dataset_3.csv
+unnecessary\phishing_dataset_3.csv
+unnecessary\datasets\phishing_dataset_3.csv
+```
+
+2. Normalize column names to lowercase.
+
+3. Select Tier 1 URL-only features:
+
+```text
+length_url
+length_hostname
+nb_dots
+nb_hyphens
+nb_www
+ratio_digits_url
+length_words_raw
+longest_words_raw
+longest_word_path
+phish_hints
+nb_slash
+shortest_word_host
+```
+
+4. Convert target labels:
+
+```text
+phishing -> 1
+legitimate -> 0
+1 -> 1
+0 -> 0
+```
+
+5. Perform stratified train/test split:
+
+```python
+train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+```
+
+6. Fit preprocessing only on training data:
+
+```text
+SimpleImputer(strategy="median")
+StandardScaler()
+```
+
+7. Transform train and test separately:
+
+```text
+fit_transform(X_train)
+transform(X_test)
+```
+
+8. Train model:
+
+```text
+RandomForestClassifier(
+    n_estimators=250,
+    max_depth=12,
+    min_samples_leaf=2,
+    random_state=42,
+    n_jobs=-1
+)
+```
+
+9. Evaluate on holdout test set:
+
+```text
+accuracy
+F1 score
+ROC-AUC
+```
+
+10. Save artifacts:
+
+```text
+Model\1\tier1_url_model.pkl
+Model\1\preprocessor.pkl
+```
+
+**Important SMOTE clarification:**
+
+The current `Model\1\train_tier1.py` does **not** use SMOTE. If SMOTE is used in future retraining, the correct order is:
+
+```text
+Load data
+Extract features
+Split into train/test
+Fit imputer/scaler on train only
+Apply SMOTE only to training data
+Train model on resampled training data
+Evaluate once on untouched test data
+Save model/preprocessor
+```
+
+SMOTE must **not** be applied before train/test split. If SMOTE is applied before splitting, synthetic samples derived from training examples can leak into the test set and inflate metrics.
+
+Correct defensible order:
+
+```text
+Raw dataset
+-> feature selection
+-> train/test split
+-> fit preprocessing on X_train
+-> transform X_train and X_test
+-> SMOTE only on transformed X_train/y_train
+-> model.fit(X_train_resampled, y_train_resampled)
+-> model.predict(X_test_transformed)
+```
+
+For cross-validation, SMOTE should be inside an `imblearn.pipeline.Pipeline` so resampling happens independently inside each fold.
+
+## 2. Flask + ML Ensemble + Gradio UI Setup
+
+**Question:** What does the Flask + ML ensemble + Gradio UI setup actually look like? Which part serves the model, which part is the demo UI, and how do they talk?
+
+**Answer:**
+
+The current project uses **Flask**, not Gradio, as the working application UI and API.
+
+Actual current structure:
+
+```text
+Browser UI
+  -> Flask routes in flask_phishing_app\app.py
+  -> PhishingAnalyzer in flask_phishing_app\services\analysis.py
+  -> saved ML artifacts under Model\
+  -> SQLite history database
+  -> optional Ollama / Playwright / threat intelligence
+```
+
+There is no active Gradio app in the current repo.
+
+The model serving flow is:
+
+1. User opens:
+
+```text
+http://127.0.0.1:5000
+```
+
+2. User submits URL from the dashboard.
+
+3. Frontend JavaScript calls Flask API:
+
+```text
+POST /api/analyze
+POST /api/batch
+```
+
+4. Flask route calls:
+
+```python
+analyzer.analyze_url(url)
+```
+
+or:
+
+```python
+analyzer.analyze_url_fast(url)
+```
+
+5. `PhishingAnalyzer` loads and uses:
+
+```text
+Model\1\tier1_url_model.pkl
+Model\1\preprocessor.pkl
+Model\2\final_ensemble.pkl
+Model\2\preprocessor.pkl
+Model\2\selected_features.txt
+Model\3\network_intelligence.py
+```
+
+6. Flask returns JSON to the dashboard.
+
+7. The dashboard renders verdict, score, evidence, charts, AI summary, screenshot, sandbox preview, history, and notes.
+
+If Gradio were added, it would be a separate demo UI that either imports the same `PhishingAnalyzer` class directly or calls the Flask API endpoints. For this project, the accurate viva answer is:
+
+> The deployed/demo application is Flask-based. Flask serves both the UI and API. The ML ensemble is loaded inside the backend service layer, not served by a separate ML microservice. Gradio is not part of the current working app.
+
+## 3. Final Feature List and Removed/Neutralized Features
+
+**Question:** What is the final list of features used, and which ones were removed after the leakage fix?
+
+**Answer:**
+
+There are two model feature groups.
+
+### Tier 1 Lexical URL Features
+
+Tier 1 uses 12 URL-only features:
+
+```text
+length_url
+length_hostname
+nb_dots
+nb_hyphens
+nb_www
+ratio_digits_url
+length_words_raw
+longest_words_raw
+longest_word_path
+phish_hints
+nb_slash
+shortest_word_host
+```
+
+These are legitimate because they are available immediately from the submitted URL at prediction time.
+
+### Tier 2 Stacking Model Features
+
+The saved Tier 2 model expects these 10 selected features:
+
+```text
+nb_www
+longest_word_path
+phish_hints
+nb_hyperlinks
+ratio_extHyperlinks
+domain_age
+web_traffic
+google_index
+page_rank
+status_encoded
+```
+
+Runtime feature sources:
+
+```text
+nb_www              -> URL netloc
+longest_word_path   -> URL path tokenization
+phish_hints         -> suspicious keyword count in URL
+nb_hyperlinks       -> crawled HTML anchor count
+ratio_extHyperlinks -> fraction of external links
+domain_age          -> WHOIS/reputation result
+web_traffic         -> heuristic proxy from hyperlink count
+google_index        -> heuristic HTTPS + hyperlink signal
+page_rank           -> heuristic 0-10 trust-like score
+status_encoded      -> fixed neutral value 0.5
+```
+
+The key leakage-related feature is:
+
+```text
+status_encoded
+```
+
+It was not removed from `selected_features.txt` because the saved Tier 2 model still expects that column. Instead, it is neutralized at runtime:
+
+```python
+"status_encoded": 0.5
+```
+
+This keeps the model input schema compatible while preventing HTTP status from dominating predictions.
+
+## 4. Leakage Issue
+
+**Question:** What was the leakage issue exactly? Was `status_encoded` a direct target leak? What replaced it?
+
+**Answer:**
+
+The leakage concern is around `status_encoded`.
+
+The project documentation says the older Tier 2 setup used HTTP status encoding in a way that could poison the model. In phishing datasets, status-like columns can become strongly correlated with labels because of how the dataset was collected, not because the status is a reliable phishing property.
+
+Example issue:
+
+- Many collected phishing pages may be dead or return error codes.
+- Many legitimate pages may return `200 OK`.
+- The model may learn dataset collection artifacts instead of phishing behavior.
+
+That is not a safe prediction-time feature because:
+
+- A phishing page can return `200 OK`.
+- A legitimate site can return `403`, `404`, bot-blocked, or timeout.
+- HTTP status can depend on geography, bot protection, network, or headers.
+
+So the runtime code neutralizes it:
+
+```python
+"status_encoded": 0.5
+```
+
+This means:
+
+- It is still passed to the saved model because the model expects the column.
+- It no longer carries actual HTTP status information.
+- It cannot directly leak the label or overfit to crawler status artifacts.
+
+Better future retraining:
+
+- Remove `status_encoded` completely from training.
+- Retrain Tier 2 with only legitimate prediction-time features.
+- Replace it with defensible signals such as `html_fetch_success`, `redirect_count`, `has_login_form`, `external_link_ratio`, `domain_age_days`, `ssl_valid`, and `security_header_score`.
+
+Feature legitimacy rule:
+
+> A feature is legitimate only if it is available at prediction time and is not derived from the true label or dataset collection process.
+
+## 5. Ensemble Algorithms and Combination Method
+
+**Question:** Which algorithms make up the ensemble, and how are outputs combined?
+
+**Answer:**
+
+Tier 1 is separate:
+
+```text
+RandomForestClassifier
+```
+
+Tier 2 is a scikit-learn `StackingClassifier`.
+
+The saved Tier 2 base estimators are:
+
+```text
+LogisticRegression(max_iter=2000)
+RandomForestClassifier(n_estimators=300, random_state=42, n_jobs=-1)
+SVC(probability=True)
+XGBClassifier(n_estimators=200, eval_metric="logloss")
+LGBMClassifier(n_estimators=300, random_state=42)
+```
+
+The final meta-estimator is:
+
+```text
+LogisticRegression(max_iter=2000)
+```
+
+This is **stacking**, not simple voting.
+
+How stacking works:
+
+1. Each base learner produces a prediction/probability.
+2. Those outputs become higher-level inputs to the final estimator.
+3. The final Logistic Regression meta-model learns how to combine the base model outputs.
+
+So the Tier 2 ensemble is:
+
+```text
+LR + RF + SVC + XGBoost + LightGBM -> Logistic Regression meta-learner
+```
+
+## 6. Hybrid Scoring
+
+**Question:** What does hybrid scoring mean? Is it ensemble-of-models or ML + heuristic score?
+
+**Answer:**
+
+In PhishScope, "hybrid scoring" means a mix of ML scores and heuristic/security scores. It is not only the Tier 2 stacking ensemble.
+
+There are two levels:
+
+### Model Ensemble
+
+Tier 2 itself is a model ensemble:
+
+```text
+StackingClassifier = multiple ML models combined by a meta-model
+```
+
+### Hybrid Final Score
+
+The final `hybrid_score` combines:
+
+```text
+Tier 1 URL score
+Tier 2 HTML/content score
+Tier 3 network score
+Security header score
+```
+
+When HTML is available:
+
+```text
+final_score = 0.55 * Tier1
+            + 0.25 * Tier2
+            + 0.10 * Network
+            + 0.10 * Security
+```
+
+When HTML is not available:
+
+```text
+final_score = 0.75 * Tier1
+            + 0.15 * Network
+            + 0.10 * Security
+```
+
+This design lets the system still produce a verdict even when a webpage blocks crawling.
+
+## 7. Current Performance Metrics
+
+**Question:** What are the current performance metrics post-fix, and how do they compare to the old leaky model?
+
+**Answer:**
+
+The available repository gives clear Tier 1 training metrics through `Model\1\train_tier1.py`, which prints:
+
+```text
+Accuracy
+F1 Score
+ROC-AUC
+```
+
+The README describes Tier 1 approximately as:
+
+```text
+Accuracy: 89.89%
+F1: 90.57%
+```
+
+The README describes Tier 2 approximately as:
+
+```text
+Accuracy: ~94.4%
+```
+
+However, the current repo does **not** include a Tier 2 retraining script or a metrics report showing exact post-leakage precision, recall, F1, and ROC-AUC after removing or neutralizing `status_encoded`.
+
+So the defensible answer is:
+
+> The old model likely had inflated performance because status-related features can correlate with labels due to dataset collection artifacts. In the current deployed runtime, `status_encoded` is neutralized to 0.5 to reduce leakage risk, but a full post-fix retraining/evaluation report is not present in this repository. The next proper step is to retrain Tier 2 without `status_encoded` and report accuracy, precision, recall, F1, ROC-AUC, and confusion matrix on an untouched holdout set.
+
+Do not claim exact post-fix Tier 2 metrics unless they are generated from a retrained model.
+
+## 8. Leakage Validation Strategy
+
+**Question:** How did you validate there is no leakage this time?
+
+**Answer:**
+
+Current runtime leakage mitigation:
+
+```text
+status_encoded is fixed to 0.5 at prediction time
+```
+
+This prevents the runtime model from using actual HTTP status as a strong signal.
+
+For training-time validation, the correct rigorous method should be:
+
+1. Remove direct target-derived fields.
+2. Remove dataset artifact fields.
+3. Split before preprocessing and SMOTE.
+4. Fit preprocessing only on training data.
+5. Apply SMOTE only on training folds.
+6. Evaluate on untouched holdout data.
+7. Use cross-validation where each fold independently fits preprocessing and SMOTE.
+8. Add domain-based split if possible so the same domain does not appear in both train and test.
+9. Prefer temporal split for phishing datasets if timestamps are available.
+
+Best answer:
+
+> We mitigated the known runtime leakage by neutralizing `status_encoded`. For a publication-level validation, we should retrain Tier 2 after removing that feature entirely and validate using stratified holdout plus domain-level or temporal split. This would prove that performance comes from real phishing signals rather than collection artifacts.
+
+## 9. Deployment / Demo Flow and Hosting Blocker
+
+**Question:** Since you skipped live hosting in favor of a demo video + README, what does the deployed/demo flow look like and what was the blocker?
+
+**Answer:**
+
+Current demo flow:
+
+1. User starts the project with:
+
+```text
+START_PHISHSCOPE.bat
+```
+
+2. Launcher runs:
+
+```text
+setup_and_run.bat
+scripts\launch_phishscope.ps1
+```
+
+3. Launcher checks:
+
+```text
+Python
+virtual environment
+requirements
+Playwright Chromium
+Ollama availability
+model files
+restore snapshots
+```
+
+4. Flask starts locally at:
+
+```text
+http://127.0.0.1:5000
+```
+
+5. User logs in and submits URL.
+
+6. Dashboard displays verdict, evidence, screenshots, AI summary, and history.
+
+Specific hosting blockers:
+
+- The app depends on local ML model files.
+- It uses Playwright Chromium for screenshots, which needs browser/runtime support on the host.
+- Ollama is local and not automatically available on normal cloud platforms.
+- Some hosting platforms have memory/time limits unsuitable for model loading, screenshots, and crawling.
+- SQLite is fine locally but should be PostgreSQL in production.
+- Safe production deployment needs secrets, worker separation, queueing, file storage, and stricter abuse controls.
+
+Defensible viva answer:
+
+> We chose a local demo because this is a security analysis tool with local models, screenshots, and optional local LLM processing. Hosting it publicly without authentication, rate limits, privacy redaction, and abuse controls would be risky. The local demo proves the full pipeline while avoiding unsafe public exposure.
+
+## 10. Known Limitations and Attack Scenarios
+
+**Question:** What are known limitations or attack scenarios your model does not handle well?
+
+**Answer:**
+
+Known limitations:
+
+1. **Fresh phishing domains**
+   - Very new phishing pages may not appear in reputation feeds yet.
+
+2. **Cloaking**
+   - A phishing site may show harmless content to bots and malicious content to real users.
+
+3. **JavaScript-heavy pages**
+   - If content requires complex interaction, login, or delayed scripts, static extraction may miss signals.
+
+4. **Bot blocking**
+   - Sites may return `403`, CAPTCHA, or blank pages to automated requests.
+
+5. **Compromised legitimate domains**
+   - A real trusted domain can host a malicious page, making lexical and domain-age features less useful.
+
+6. **URL shorteners and redirects**
+   - Shorteners can hide final destinations.
+   - Redirect chains need careful expansion with safety limits.
+
+7. **Image-based phishing**
+   - Pages that use images instead of text can bypass text/NLP phrase detection.
+
+8. **Adversarial URL design**
+   - Attackers can craft URLs to avoid obvious phishing keywords.
+
+9. **Dataset drift**
+   - Phishing tactics evolve, so old training data can become stale.
+
+10. **Privacy-sensitive URLs**
+    - URLs may contain tokens, email IDs, or tracking IDs.
+    - History storage must be protected and should not be public.
+
+11. **False positives**
+    - Marketing links, email tracking URLs, and SSO redirects can look suspicious but be legitimate.
+
+12. **False negatives**
+    - Clean-looking pages with malicious intent may not trigger enough signals.
+
+Strong closing answer:
+
+> The model should be treated as a decision-support tool, not an absolute authority. It helps prioritize suspicious URLs and explain evidence, but final judgement should include analyst review, especially for high-impact cases.
