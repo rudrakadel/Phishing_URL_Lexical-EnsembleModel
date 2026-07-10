@@ -457,8 +457,8 @@ def create_app() -> Flask:
     @auth_required
     def get_history():
         limit = request.args.get("limit", default=20, type=int)
-        limit = max(1, min(limit, 100))
-        return jsonify({"items": history.fetch_recent(limit=limit, username=session.get("username"))})
+        limit = max(1, min(limit, 500))
+        return jsonify({"items": history.fetch_recent(limit=limit), "scope": "global"})
 
     @app.post("/api/analyze")
     @auth_required

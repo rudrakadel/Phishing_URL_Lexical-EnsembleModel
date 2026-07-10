@@ -160,7 +160,7 @@ function setActiveFilter(nextFilter) {
 }
 
 async function loadHistory() {
-  const data = await fetchJson("/api/history?limit=100");
+  const data = await fetchJson("/api/history?limit=500");
   allItems = data.items || [];
   applyFilter();
 }
