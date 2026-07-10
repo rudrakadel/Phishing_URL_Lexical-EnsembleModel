@@ -335,6 +335,7 @@ function Write-LocalEnv {
         "WORKER_POLL_INTERVAL_SECONDS=2",
         "WORKER_MAX_RETRIES=5",
         "WORKER_STALE_AFTER_SECONDS=300",
+        "BATCH_MAX_URLS=150",
         "REQUEST_TIMEOUT_SECONDS=5",
         "EXTERNAL_TIMEOUT_SECONDS=4",
         "OLLAMA_TIMEOUT_SECONDS=18",
@@ -360,6 +361,7 @@ function Set-AppEnvironment {
     $env:DATABASE_URL = ""
     $env:REDIS_URL = ""
     $env:ENABLE_BACKGROUND_WORKER = "1"
+    $env:BATCH_MAX_URLS = "150"
     $env:PHISHING_MODEL_DIR = ""
     $env:OLLAMA_URL = "$OllamaUrl/api/generate"
     $env:OLLAMA_MODEL = $OllamaModel

@@ -101,7 +101,7 @@ class AppConfig:
             rate_limit_batch=_env_int("RATE_LIMIT_BATCH_PER_WINDOW", 5),
             rate_limit_notes=_env_int("RATE_LIMIT_NOTES_PER_WINDOW", 30),
             rate_limit_window_seconds=_env_int("RATE_LIMIT_WINDOW_SECONDS", 60),
-            batch_max_urls=_env_int("BATCH_MAX_URLS", 50),
+            batch_max_urls=_env_int("BATCH_MAX_URLS", 150),
             url_max_length=_env_int("URL_MAX_LENGTH", 2048),
             note_max_length=_env_int("NOTE_MAX_LENGTH", 4000),
             enable_worker=_env_bool("ENABLE_BACKGROUND_WORKER", True),

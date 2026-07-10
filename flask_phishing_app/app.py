@@ -244,6 +244,7 @@ def create_app() -> Flask:
             "worker_enabled": config.enable_worker,
             "worker_active_in_process": worker_active_in_process,
             "auth_required": app.config["REQUIRE_AUTH"],
+            "batch_max_urls": config.batch_max_urls,
         }
 
     @app.before_request
@@ -501,9 +502,10 @@ def create_app() -> Flask:
         if not raw_items:
             return json_error("urls must be a non-empty array", 400)
 
+        submitted_count = len(raw_items)
         normalized: list[str] = []
         try:
-            for item in raw_items[: config.batch_max_urls]:
+            for item in raw_items:
                 value = sanitize_url(item)
                 if value:
                     normalized.extend(extract_urls_from_text(value))
@@ -515,7 +517,9 @@ def create_app() -> Flask:
             if item not in seen:
                 seen.add(item)
                 deduped.append(item)
+        detected_count = len(deduped)
         normalized = deduped[: config.batch_max_urls]
+        skipped_count = max(0, detected_count - len(normalized))
         if not normalized:
             return json_error("no valid urls supplied", 400)
 
@@ -527,7 +531,14 @@ def create_app() -> Flask:
             result["enrichment_job_id"] = None
             results.append(result)
         metrics.increment("phishscope_batch_requests_total")
-        return jsonify({"count": len(results), "items": results})
+        return jsonify({
+            "count": len(results),
+            "submitted_count": submitted_count,
+            "detected_count": detected_count,
+            "skipped_count": skipped_count,
+            "max_urls": config.batch_max_urls,
+            "items": results,
+        })
 
     @app.get("/api/analysis/<int:analysis_id>")
     @auth_required

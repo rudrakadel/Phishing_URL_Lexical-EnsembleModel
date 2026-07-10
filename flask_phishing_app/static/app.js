@@ -718,9 +718,15 @@ async function runBatchAnalysis() {
   });
   renderBatchResults(data.items || []);
   const pendingCount = (data.items || []).filter((item) => (item.enrichment?.status || "complete") === "pending").length;
+  const processedCount = data.count || 0;
+  const skippedCount = data.skipped_count || 0;
+  const detectedCount = data.detected_count || urls.length;
+  const capNote = skippedCount
+    ? ` ${skippedCount} of ${detectedCount} detected URL(s) were skipped because the current batch cap is ${data.max_urls || processedCount}.`
+    : "";
   batchStatus.textContent = pendingCount
-    ? `Fast batch pass completed for ${data.count || 0} URLs. ${pendingCount} deep enrichment job(s) queued.`
-    : `Completed ${data.count || 0} batch analyses. Select any detected URL tab to inspect that specific output.`;
+    ? `Fast batch pass completed for ${processedCount} URLs. ${pendingCount} deep enrichment job(s) queued.${capNote}`
+    : `Completed ${processedCount} batch analyses.${capNote} Select any detected URL tab to inspect that specific output.`;
   await loadHistory();
 }
 
