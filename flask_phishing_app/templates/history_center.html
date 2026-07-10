@@ -48,6 +48,11 @@
             <button type="button" class="history-filter" data-history-filter="phishing">Phishing</button>
             <button type="button" class="history-filter" data-history-filter="not-phishing">Not phishing</button>
           </div>
+          <select id="history-limit" class="history-limit" aria-label="Records to show">
+            <option value="100">Show 100</option>
+            <option value="250" selected>Show 250</option>
+            <option value="500">Show 500</option>
+          </select>
           <button id="history-refresh-page" type="button">Refresh</button>
         </div>
         <div id="history-summary-page" class="history-summary"></div>

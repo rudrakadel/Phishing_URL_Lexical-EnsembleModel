@@ -7,6 +7,7 @@ const detailTitle = document.getElementById("detail-title");
 const detailBody = document.getElementById("detail-body");
 const detailClose = document.getElementById("detail-close");
 const filterButtons = document.querySelectorAll("[data-history-filter]");
+const limitSelect = document.getElementById("history-limit");
 
 let allItems = [];
 let activeFilter = "all";
@@ -160,7 +161,8 @@ function setActiveFilter(nextFilter) {
 }
 
 async function loadHistory() {
-  const data = await fetchJson("/api/history?limit=500");
+  const limit = Number(limitSelect?.value || 250);
+  const data = await fetchJson(`/api/history?limit=${limit}`);
   allItems = data.items || [];
   applyFilter();
 }
@@ -170,6 +172,13 @@ filterButtons.forEach((button) => {
   button.addEventListener("click", () => setActiveFilter(button.dataset.historyFilter));
 });
 refreshButton.addEventListener("click", async () => {
+  try {
+    await loadHistory();
+  } catch (error) {
+    tableWrap.innerHTML = `<div class="muted">${escapeHtml(error.message)}</div>`;
+  }
+});
+limitSelect?.addEventListener("change", async () => {
   try {
     await loadHistory();
   } catch (error) {

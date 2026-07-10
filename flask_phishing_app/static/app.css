@@ -760,7 +760,13 @@ pre {
 .expandable { margin-top: 12px; }
 .expandable summary { cursor: pointer; color: var(--brand); font-weight: 700; }
 
-.history { display: grid; gap: 10px; }
+.history {
+  display: grid;
+  gap: 10px;
+  max-height: 430px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
 .history-row {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
@@ -929,6 +935,22 @@ pre {
   border-color: transparent;
 }
 
+.history-limit {
+  min-height: 44px;
+  min-width: 128px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--ink);
+  font: inherit;
+}
+
+:root[data-theme="dark"] .history-limit {
+  background: rgba(15, 23, 42, 0.82);
+  color: var(--ink);
+}
+
 :root[data-theme="dark"] .history-filter-group {
   background: rgba(148, 163, 184, 0.10);
 }
@@ -941,7 +963,10 @@ pre {
 }
 
 .history-table-wrap {
-  overflow-x: auto;
+  max-height: min(72vh, 760px);
+  overflow: auto;
+  padding-right: 6px;
+  border-radius: 18px;
 }
 
 .history-center-layout {
@@ -1008,6 +1033,9 @@ pre {
 
 .records-head {
   font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 .records-link {
