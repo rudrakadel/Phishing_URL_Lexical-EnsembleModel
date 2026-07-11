@@ -499,21 +499,14 @@ class PhishingAnalyzer:
             nlp = nlp_future.result()
             sandbox = sandbox_future.result()
 
-            # Execute Tier 2 Model conditionally if HTML is available
-            if crawl.get("html_ok"):
-                ml_features = self._extract_model_features(normalized, crawl, reputation)
-                ml_result = self._run_model(ml_features)
-                tier2_score = round(ml_result["probability"] * 100, 2) if ml_result.get("available") else None
-            else:
-                ml_result = {
-                    "available": False,
-                    "probability": tier1_result["probability"],
-                    "prediction": tier1_result["prediction"],
-                    "features": {},
-                    "reason": "HTML fetch failed, Tier 2 skipped."
-                }
-                ml_features = {}
-                tier2_score = None
+            # Tier 2 should still run when HTML fetch fails. In that case the
+            # extractor supplies neutral/zero HTML-derived values.
+            tier2_used_fallback = not bool(crawl.get("html_ok"))
+            ml_features = self._extract_model_features(normalized, crawl, reputation)
+            ml_result = self._run_model(ml_features)
+            if tier2_used_fallback and ml_result.get("available"):
+                ml_result["reason"] = "HTML unavailable; Tier 2 used URL/network fallback values."
+            tier2_score = round(ml_result["probability"] * 100, 2) if ml_result.get("available") else None
 
             # Execute Network Intelligence and Security Layer
             header_analysis = self._analyze_security_headers(crawl.get("response_headers", {}))
@@ -530,7 +523,7 @@ class PhishingAnalyzer:
             network_score = round(0.40 * ssl_score + 0.30 * dns_score + 0.30 * reputation_score, 2)
 
             # Consensus Score Weighting
-            if crawl.get("html_ok") and tier2_score is not None:
+            if tier2_score is not None:
                 final_score = round(0.55 * tier1_score + 0.25 * tier2_score + 0.10 * network_score + 0.10 * security_score, 2)
             else:
                 final_score = round(0.75 * tier1_score + 0.15 * network_score + 0.10 * security_score, 2)
@@ -565,7 +558,7 @@ class PhishingAnalyzer:
             shap_result = shap_future.result() if shap_future else {
                 "available": False,
                 "top_features": [],
-                "reason": "SHAP unavailable because Tier 2 model was skipped.",
+                "reason": "SHAP unavailable because Tier 2 explanation could not be computed.",
             }
 
         component_scores = {
@@ -578,7 +571,7 @@ class PhishingAnalyzer:
             "Reputation": reputation_score,
             "URL": round(self._compute_url_risk(url_signals), 2),
             "Tier 1 (URL)": tier1_score,
-            "Tier 2 (HTML)": tier2_score if tier2_score is not None else "Skipped",
+            "Tier 2 (HTML/Fallback)": tier2_score if tier2_score is not None else "Unavailable",
             "Network (Tier 3)": network_score,
             "Security Layer": security_score,
         }
@@ -678,21 +671,14 @@ class PhishingAnalyzer:
         nlp = self._analyze_text(normalized, crawl.get("html", ""), crawl.get("title", ""))
         header_analysis = self._analyze_security_headers(crawl.get("response_headers", {}))
         
-        # Execute Tier 2 Model conditionally if HTML is available
-        if crawl.get("html_ok"):
-            ml_features = self._extract_model_features(normalized, crawl, reputation)
-            ml_result = self._run_model(ml_features)
-            tier2_score = round(ml_result["probability"] * 100, 2) if ml_result.get("available") else None
-        else:
-            ml_result = {
-                "available": False,
-                "probability": tier1_result["probability"],
-                "prediction": tier1_result["prediction"],
-                "features": {},
-                "reason": "HTML fetch failed, Tier 2 skipped."
-            }
-            ml_features = {}
-            tier2_score = None
+        # Tier 2 should still run when HTML fetch fails. In that case the
+        # extractor supplies neutral/zero HTML-derived values.
+        tier2_used_fallback = not bool(crawl.get("html_ok"))
+        ml_features = self._extract_model_features(normalized, crawl, reputation)
+        ml_result = self._run_model(ml_features)
+        if tier2_used_fallback and ml_result.get("available"):
+            ml_result["reason"] = "HTML unavailable; Tier 2 used URL/network fallback values."
+        tier2_score = round(ml_result["probability"] * 100, 2) if ml_result.get("available") else None
 
         # Execute Network Intelligence and Security Layer
         security_result = self.security_analyzer.analyze(
@@ -708,7 +694,7 @@ class PhishingAnalyzer:
         network_score = round(0.40 * ssl_score + 0.30 * dns_score + 0.30 * reputation_score, 2)
 
         # Consensus Score Weighting
-        if crawl.get("html_ok") and tier2_score is not None:
+        if tier2_score is not None:
             final_score = round(0.55 * tier1_score + 0.25 * tier2_score + 0.10 * network_score + 0.10 * security_score, 2)
         else:
             final_score = round(0.75 * tier1_score + 0.15 * network_score + 0.10 * security_score, 2)
@@ -725,7 +711,7 @@ class PhishingAnalyzer:
             "Reputation": reputation_score,
             "URL": round(self._compute_url_risk(url_signals), 2),
             "Tier 1 (URL)": tier1_score,
-            "Tier 2 (HTML)": tier2_score if tier2_score is not None else "Skipped",
+            "Tier 2 (HTML/Fallback)": tier2_score if tier2_score is not None else "Unavailable",
             "Network (Tier 3)": network_score,
             "Security Layer": security_score,
         }
@@ -1498,7 +1484,7 @@ class PhishingAnalyzer:
     def _chart_components(self, scores: dict[str, float]) -> str | None:
         if plt is None or not scores:
             return None
-        # Filter out non-numeric values (like "Skipped") to avoid matplotlib errors
+        # Filter out non-numeric values to avoid matplotlib errors.
         numeric_scores = {k: v for k, v in scores.items() if isinstance(v, (int, float))}
         if not numeric_scores:
             return None
