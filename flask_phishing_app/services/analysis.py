@@ -119,20 +119,178 @@ KNOWN_BRANDS = {
     "instagram": "instagram.com",
 }
 
-SUSPICIOUS_PHRASES = [
-    "verify your account",
-    "confirm your identity",
-    "account suspended",
-    "immediate action required",
-    "click here to confirm",
-    "your account is at risk",
-    "unusual activity detected",
-    "enter your credentials",
-    "verify now",
-    "update your payment",
-    "password",
-    "otp",
-]
+MULTILINGUAL_SUSPICIOUS_PHRASES = {
+    "en": [
+        "verify your account",
+        "confirm your identity",
+        "account suspended",
+        "immediate action required",
+        "click here to confirm",
+        "your account is at risk",
+        "unusual activity detected",
+        "enter your credentials",
+        "verify now",
+        "update your payment",
+        "password",
+        "otp",
+    ],
+    "es": [
+        "verificar su cuenta", "verifica tu cuenta",
+        "confirmar su identidad", "confirma tu identidad",
+        "cuenta suspendida", "cuenta bloqueada",
+        "se requiere acción inmediata", "acción requerida inmediatamente",
+        "haga clic aquí para confirmar", "clic aquí para confirmar",
+        "su cuenta está en riesgo", "tu cuenta está en riesgo",
+        "actividad inusual detectada", "actividad sospechosa detectada",
+        "ingrese sus credenciales", "introduce tus datos de acceso",
+        "verificar ahora", "verifica ahora",
+        "actualizar su pago", "actualice su información de pago",
+        "contraseña",
+        "código de un solo uso",
+    ],
+    "pt": [
+        "verificar sua conta", "verifique sua conta",
+        "confirmar sua identidade", "confirme sua identidade",
+        "conta suspensa", "conta bloqueada",
+        "ação imediata requerida", "ação necessária imediatamente",
+        "clique aqui para confirmar",
+        "sua conta está em risco",
+        "atividade incomum detectada", "atividade suspeita",
+        "insira suas credenciais", "digite suas credenciais",
+        "verificar agora", "verifique agora",
+        "atualizar seu pagamento", "atualize suas informações de pagamento",
+        "senha",
+        "código de uso único",
+    ],
+    "fr": [
+        "vérifier votre compte", "vérifiez votre compte",
+        "confirmer votre identité", "confirmez votre identité",
+        "compte suspendu", "compte bloqué",
+        "action immédiate requise",
+        "cliquez ici pour confirmer",
+        "votre compte est en danger", "votre compte est menacé",
+        "activité inhabituelle détectée", "activité suspecte détectée",
+        "saisissez vos identifiants", "entrez vos identifiants",
+        "vérifier maintenant", "vérifiez maintenant",
+        "mettre à jour votre paiement", "mettez à jour votre mode de paiement",
+        "mot de passe",
+        "code à usage unique",
+    ],
+    "de": [
+        "ihr konto verifizieren", "konto verifizieren", "bestätigen sie ihr konto",
+        "identität bestätigen", "bestätigen sie ihre identität",
+        "konto gesperrt", "konto vorübergehend gesperrt",
+        "sofortiges handeln erforderlich", "dringender handlungsbedarf",
+        "klicken sie hier um zu bestätigen", "hier klicken zum bestätigen",
+        "ihr konto ist gefährdet", "ihr konto ist in gefahr",
+        "ungewöhnliche aktivität festgestellt", "verdächtige aktivität",
+        "anmeldedaten eingeben", "geben sie ihre zugangsdaten ein",
+        "jetzt verifizieren", "jetzt bestätigen",
+        "zahlungsmethode aktualisieren", "zahlungsinformationen aktualisieren",
+        "passwort",
+        "einmalpasswort",
+    ],
+    "it": [
+        "verifica il tuo account", "verificare il tuo account",
+        "conferma la tua identità", "confermare la tua identità",
+        "account sospeso", "account bloccato",
+        "richiesta azione immediata", "azione immediata richiesta",
+        "clicca qui per confermare", "fare clic qui per confermare",
+        "il tuo account è a rischio",
+        "rilevata attività insolita", "attività insolita rilevata",
+        "inserisci le tue credenziali",
+        "verifica ora", "verifica subito",
+        "aggiorna il tuo pagamento", "aggiornare i dati di pagamento",
+        "codice monouso",
+    ],
+    "ru": [
+        "подтвердите свой аккаунт", "подтвердить аккаунт",
+        "подтвердите свою личность", "подтвердить личность",
+        "аккаунт заблокирован", "учетная запись заблокирована",
+        "требуются незамедлительные действия", "требуется немедленное действие",
+        "нажмите здесь чтобы подтвердить", "кликните здесь для подтверждения",
+        "ваш аккаунт под угрозой", "ваш аккаунт в опасности",
+        "обнаружена необычная активность", "подозрительная активность",
+        "введите свои учетные данные", "введите логин и пароль",
+        "подтвердить сейчас", "проверить сейчас",
+        "обновить способ оплаты", "обновите платежную информацию",
+        "пароль",
+        "одноразовый код",
+    ],
+    "hi": [
+        "अपना खाता सत्यापित करें", "खाता सत्यापित करें",
+        "अपनी पहचान की पुष्टि करें", "पहचान की पुष्टि",
+        "खाता निलंबित", "खाता ब्लॉक",
+        "तुरंत कार्रवाई की आवश्यकता है", "तत्काल कार्रवाई की आवश्यकता है",
+        "पुष्टि करने के लिए यहां क्लिक करें",
+        "आपका खाता खतरे में है",
+        "असामान्य गतिविधि का पता चला",
+        "अपनी साख दर्ज करें", "लॉगिन जानकारी दर्ज करें",
+        "अभी सत्यापित करें",
+        "अपना भुगतान अपडेट करें", "भुगतान जानकारी अपडेट करें",
+        "पासवर्ड",
+        "ओटीपी", "एक बार का पासवर्ड",
+    ],
+    "zh": [
+        "验证您的帐户", "验证您的账户", "验证账户",
+        "确认您的身份", "确认您的安全身份",
+        "帐户被暂停", "账户被冻结", "账户锁定",
+        "需要立即采取行动", "需要立即行动",
+        "点击这里进行确认", "点击此处确认",
+        "您的帐户处于风险之中", "您的账户存在风险",
+        "检测到异常活动", "发现异常活动",
+        "输入您的凭据", "输入您的登录凭证",
+        "现在验证", "立即验证",
+        "更新您的付款信息", "更新支付方式",
+        "密码",
+        "一次性密码", "验证码",
+    ],
+    "ar": [
+        "التحقق من حسابك", "تأكيد حسابك",
+        "تأكيد هويتك", "تأكيد الهوية",
+        "تم تعليق الحساب", "تم إيقاف حسابك",
+        "مطلوب اتخاذ إجراء فوري",
+        "انقر هنا للتأكيد",
+        "حسابك في خطر",
+        "تم اكتشاف نشاط غير عادي",
+        "أدخل بيانات الاعتماد الخاصة بك", "أدخل اسم المستخدم وكلمة المرور",
+        "تحقق الآن",
+        "تحديث طريقة الدفع", "تحديث بيانات الدفع",
+        "كلمة المرور", "كلمة سر",
+        "رمز Verification", "رمز التحقق",
+    ],
+    "pl": [
+        "zweryfikuj swoje konto", "potwierdź swoje konto",
+        "potwierdź swoją tożsamość",
+        "konto zawieszone", "konto zablokowane",
+        "wymagane natychmiastowe działanie",
+        "kliknij tutaj aby potwierdzić",
+        "twoje konto jest zagrożone",
+        "wykryto nietypową aktywność",
+        "wprowadź swoje dane uwierzytelniające", "wprowadź dane logowania",
+        "zweryfikuj teraz",
+        "zaktualizuj swoje dane płatnicze", "zaktualizuj płatność",
+        "hasło",
+        "kod jednorazowy",
+    ],
+    "tr": [
+        "hesabınızı doğrulayın", "hesabını doğrula",
+        "kimliğinizi doğrulayın", "kimliğini doğrula",
+        "hesap askıya alındı", "hesabınız askıya alındı",
+        "acil işlem yapılması gerekiyor", "hemen işlem yapın",
+        "onaylamak için buraya tıklayın",
+        "hesabınız risk altında",
+        "olağandışı etkinlik algılandı",
+        "bilgilerinizi girin", "giriş bilgilerinizi giriniz",
+        "şimdi doğrula",
+        "ödeme bilgilerinizi güncelleyin",
+        "şifre", "parola",
+        "tek kullanımlık şifre",
+    ]
+}
+
+SUSPICIOUS_PHRASES = MULTILINGUAL_SUSPICIOUS_PHRASES["en"]
+
 
 SHORTENERS = {
     "bit.ly",
@@ -997,13 +1155,40 @@ class PhishingAnalyzer:
                 "summary": "No HTML content available for text analysis.",
                 "suspicious_phrases": [],
                 "brand_impersonation": None,
+                "detected_language": "unknown",
             }
         soup = BeautifulSoup(html_content, "html.parser")
         for tag in soup(["script", "style", "noscript"]):
             tag.decompose()
         text = re.sub(r"\s+", " ", soup.get_text(" ", strip=True))
         merged = f"{title} {text}".strip().lower()
-        suspicious = [phrase for phrase in SUSPICIOUS_PHRASES if phrase in merged]
+
+        # Language detection (1. HTML tag -> 2. langdetect package -> 3. default/fallback to English)
+        lang = None
+        html_tag = soup.find("html")
+        if html_tag and html_tag.has_attr("lang"):
+            val = html_tag["lang"].split("-")[0].split("_")[0].strip().lower()
+            if len(val) == 2:
+                lang = val
+
+        if not lang or lang not in MULTILINGUAL_SUSPICIOUS_PHRASES:
+            try:
+                from langdetect import detect
+                detected = detect(merged)
+                if detected:
+                    lang = detected.lower()
+            except Exception:
+                pass
+
+        if not lang or lang not in MULTILINGUAL_SUSPICIOUS_PHRASES:
+            lang = "en"
+
+        # Build list of phrases to check: always check English, plus detected language if different
+        phrases_to_check = set(MULTILINGUAL_SUSPICIOUS_PHRASES["en"])
+        if lang != "en" and lang in MULTILINGUAL_SUSPICIOUS_PHRASES:
+            phrases_to_check.update(MULTILINGUAL_SUSPICIOUS_PHRASES[lang])
+
+        suspicious = [phrase for phrase in phrases_to_check if phrase in merged]
         impersonation = None
         actual_domain = self._registered_domain(urlparse(url).netloc).lower()
         for brand, brand_domain in KNOWN_BRANDS.items():
@@ -1013,9 +1198,10 @@ class PhishingAnalyzer:
         risk = min(len(suspicious) * 12 + (35 if impersonation else 0), 100)
         return {
             "risk_score": risk,
-            "summary": text[:240] or "No visible text extracted.",
+            "summary": f"[{lang.upper()}] " + text[:235] if text else "No visible text extracted.",
             "suspicious_phrases": suspicious,
             "brand_impersonation": impersonation,
+            "detected_language": lang,
         }
 
     def _analyze_security_headers(self, headers: dict[str, Any]) -> dict[str, Any]:
